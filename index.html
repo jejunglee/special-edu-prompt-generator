@@ -364,6 +364,26 @@
             display: none;
         }
 
+        .manual-ai-fallback {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px dashed var(--card-border);
+        }
+
+        .manual-ai-fallback p {
+            color: var(--text-secondary);
+            font-size: 0.88rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .manual-ai-fallback .action-buttons {
+            margin-bottom: 0.75rem;
+        }
+
+        .manual-ai-fallback textarea {
+            margin-bottom: 0.75rem;
+        }
+
         /* Grid layouts */
         .grid-2 {
             display: grid;
@@ -563,6 +583,28 @@
 
         .lesson-table td ul { padding-left: 1.1rem; }
 
+        .editable-hint {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+        }
+
+        .editable-cell {
+            cursor: text;
+            border-radius: 6px;
+            transition: background 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .editable-cell:hover {
+            background: rgba(0, 113, 227, 0.06);
+        }
+
+        .editable-cell:focus {
+            outline: none;
+            background: #ffffff;
+            box-shadow: inset 0 0 0 2px var(--accent);
+        }
+
         .lesson-caution-box {
             background: rgba(255, 149, 0, 0.08);
             border: 1px solid #ff9500;
@@ -585,6 +627,8 @@
                 margin: 0;
             }
             .lesson-table { page-break-inside: auto; }
+            .editable-hint { display: none; }
+            .editable-cell:hover, .editable-cell:focus { background: none; box-shadow: none; }
             .lesson-table tr { page-break-inside: avoid; }
             @page { size: A4; margin: 14mm; }
         }
@@ -803,6 +847,11 @@
                             <label class="checkbox-label"><input type="checkbox" name="strategy" value="AAC활용"> AAC활용</label>
                             <label class="checkbox-label"><input type="checkbox" name="strategy" value="긍정적행동지원"> 긍정적행동지원</label>
                             <label class="checkbox-label"><input type="checkbox" name="strategy" value="협동학습"> 협동학습</label>
+                            <label class="checkbox-label"><input type="checkbox" name="strategy" value="탐구학습"> 탐구학습</label>
+                            <label class="checkbox-label"><input type="checkbox" name="strategy" value="프로젝트학습"> 프로젝트 학습</label>
+                            <label class="checkbox-label"><input type="checkbox" name="strategy" value="또래교수"> 또래교수</label>
+                            <label class="checkbox-label"><input type="checkbox" name="strategy" value="문제중심학습"> 문제중심학습</label>
+                            <label class="checkbox-label"><input type="checkbox" name="strategy" value="발견학습"> 발견학습</label>
                         </div>
                     </div>
 
@@ -923,6 +972,16 @@
                         </div>
                         <button class="btn btn-outline" onclick="callAI('mat-prompt', 'mat-api-provider', 'mat-ai-response')">전송 🚀</button>
                         <div id="mat-ai-response" class="ai-response"></div>
+
+                        <div class="manual-ai-fallback">
+                            <p>API 키 없이 사용하려면: 위 프롬프트를 복사해 아래 사이트에 붙여넣고, 받은 답변을 다시 붙여넣어주세요.</p>
+                            <div class="action-buttons">
+                                <a class="btn btn-outline btn-small" href="https://gemini.google.com/app" target="_blank" rel="noopener">Gemini 열기 ↗</a>
+                                <a class="btn btn-outline btn-small" href="https://chatgpt.com" target="_blank" rel="noopener">ChatGPT 열기 ↗</a>
+                            </div>
+                            <textarea id="mat-manual-paste" rows="5" placeholder="여기에 AI가 준 답변을 그대로 붙여넣으세요."></textarea>
+                            <button class="btn btn-outline" type="button" onclick="showManualAIResponse('mat-manual-paste', 'mat-ai-response')">답변 표시하기</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -985,6 +1044,16 @@
                         </div>
                         <button class="btn btn-outline" onclick="callAI('eval-prompt', 'eval-api-provider', 'eval-ai-response')">전송 🚀</button>
                         <div id="eval-ai-response" class="ai-response"></div>
+
+                        <div class="manual-ai-fallback">
+                            <p>API 키 없이 사용하려면: 위 프롬프트를 복사해 아래 사이트에 붙여넣고, 받은 답변을 다시 붙여넣어주세요.</p>
+                            <div class="action-buttons">
+                                <a class="btn btn-outline btn-small" href="https://gemini.google.com/app" target="_blank" rel="noopener">Gemini 열기 ↗</a>
+                                <a class="btn btn-outline btn-small" href="https://chatgpt.com" target="_blank" rel="noopener">ChatGPT 열기 ↗</a>
+                            </div>
+                            <textarea id="eval-manual-paste" rows="5" placeholder="여기에 AI가 준 답변을 그대로 붙여넣으세요."></textarea>
+                            <button class="btn btn-outline" type="button" onclick="showManualAIResponse('eval-manual-paste', 'eval-ai-response')">답변 표시하기</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -18895,7 +18964,12 @@ const ACHIEVEMENTS_DATA = {
             '자기결정': { intro: '학생이 스스로 목표와 활동을 선택하도록 안내한다', activity1: '학생이 활동 방법이나 순서를 스스로 선택하게 한다', activity2: '학생 주도로 문제를 해결하고 스스로 점검하게 한다', wrapup: '학생이 자신의 수행을 스스로 평가하고 발표한다', evaluation: '자기평가지·자기점검표를 활용해 평가한다' },
             'AAC활용': { intro: 'AAC 도구(그림상징, 음성출력기기 등)를 소개하고 준비한다', activity1: 'AAC 도구를 활용해 의사를 표현하도록 지원한다', activity2: 'AAC를 활용한 선택·응답 활동으로 참여를 확장한다', wrapup: 'AAC로 배운 내용을 표현·요약하도록 돕는다', evaluation: 'AAC를 통한 반응을 관찰하여 평가한다' },
             '긍정적행동지원': { intro: '기대행동과 강화 체계를 안내한다', activity1: '적절한 행동에 즉각적인 긍정적 강화를 제공한다', activity2: '문제행동 예방을 위한 사전 지원과 대안행동을 지도한다', wrapup: '잘한 행동을 구체적으로 칭찬하고 강화한다', evaluation: '행동 발생 빈도·강화 반응을 관찰 기록한다' },
-            '협동학습': { intro: '모둠을 구성하고 역할을 안내한다', activity1: '모둠원과 역할을 나누어 함께 과제를 수행한다', activity2: '모둠 내 협력 활동으로 결과물을 만들어본다', wrapup: '모둠별 결과를 공유하고 서로 피드백한다', evaluation: '모둠 활동 참여도와 협력도를 관찰 평가한다' }
+            '협동학습': { intro: '모둠을 구성하고 역할을 안내한다', activity1: '모둠원과 역할을 나누어 함께 과제를 수행한다', activity2: '모둠 내 협력 활동으로 결과물을 만들어본다', wrapup: '모둠별 결과를 공유하고 서로 피드백한다', evaluation: '모둠 활동 참여도와 협력도를 관찰 평가한다' },
+            '탐구학습': { intro: '탐구 질문을 던져 호기심과 궁금증을 유발한다', activity1: '자료를 탐색하고 관찰·조사하며 정보를 수집한다', activity2: '수집한 정보를 바탕으로 결론을 정리하고 확인한다', wrapup: '탐구 과정과 알게 된 점을 정리해 발표한다', evaluation: '탐구 과정과 결과물의 완성도를 관찰 평가한다' },
+            '프로젝트학습': { intro: '프로젝트 주제와 최종 결과물을 안내하고 계획을 세운다', activity1: '역할을 나누어 프로젝트에 필요한 자료를 조사·제작한다', activity2: '조사·제작한 내용을 종합해 결과물을 완성한다', wrapup: '완성한 프로젝트 결과물을 발표하고 공유한다', evaluation: '결과물의 완성도와 참여 과정을 종합 평가한다' },
+            '또래교수': { intro: '또래 짝을 구성하고 각자의 역할(교수자/학습자)을 안내한다', activity1: '또래 교수자가 시범을 보이며 학습자를 지도한다', activity2: '짝과 함께 연습하며 서로 피드백을 주고받는다', wrapup: '짝 활동에서 배운 점을 함께 정리한다', evaluation: '또래와의 상호작용 및 수행 정도를 관찰 평가한다' },
+            '문제중심학습': { intro: '실생활과 관련된 문제 상황을 제시한다', activity1: '문제 해결에 필요한 정보를 탐색하고 원인을 분석한다', activity2: '해결 방안을 모색하고 적용해본다', wrapup: '문제 해결 과정과 결과를 정리해 공유한다', evaluation: '문제 해결 과정의 논리성과 결과를 평가한다' },
+            '발견학습': { intro: '구체적인 예시나 자료를 제시해 관찰하도록 한다', activity1: '자료를 스스로 조작·비교하며 규칙이나 원리를 탐색한다', activity2: '발견한 규칙이나 원리를 다른 상황에 적용해본다', wrapup: '스스로 발견한 원리를 자신의 말로 정리한다', evaluation: '원리 발견 과정과 적용 정도를 관찰 평가한다' }
         };
 
         const WIZARD_STAGE_LABELS = { intro: '도입', activity1: '활동 1', activity2: '활동 2', wrapup: '정리', evaluation: '평가' };
@@ -19285,47 +19359,49 @@ ${overviewJson}
             const flowRows = stageOrder.map(s => {
                 const st = stages[s.key] || {};
                 return `<tr>
-                    <td><b>${s.label}</b><br>${escapeHtml(st.title)}</td>
-                    <td>${escapeHtml(st.time)}</td>
-                    <td><b>[교사 활동]</b>${activityList(st.teacherActivities)}<b>[학생 활동]</b>${activityList(st.studentActivities)}</td>
-                    <td>${toolsForStage(s.label)}</td>
+                    <td class="editable-cell" contenteditable="true"><b>${s.label}</b><br>${escapeHtml(st.title)}</td>
+                    <td class="editable-cell" contenteditable="true">${escapeHtml(st.time)}</td>
+                    <td class="editable-cell" contenteditable="true"><b>[교사 활동]</b>${activityList(st.teacherActivities)}<b>[학생 활동]</b>${activityList(st.studentActivities)}</td>
+                    <td class="editable-cell" contenteditable="true">${toolsForStage(s.label)}</td>
                 </tr>`;
             }).join('');
 
             const evalStage = evalData.evaluationStage || {};
             const evalRow = `<tr>
-                <td><b>평가</b></td>
-                <td>${escapeHtml(evalStage.time)}</td>
-                <td><b>[교사 활동]</b>${activityList(evalStage.teacherActivities)}<b>[학생 활동]</b>${activityList(evalStage.studentActivities)}</td>
-                <td>${toolsForStage('평가')}</td>
+                <td class="editable-cell" contenteditable="true"><b>평가</b></td>
+                <td class="editable-cell" contenteditable="true">${escapeHtml(evalStage.time)}</td>
+                <td class="editable-cell" contenteditable="true"><b>[교사 활동]</b>${activityList(evalStage.teacherActivities)}<b>[학생 활동]</b>${activityList(evalStage.studentActivities)}</td>
+                <td class="editable-cell" contenteditable="true">${toolsForStage('평가')}</td>
             </tr>`;
 
             const evalTableRows = (evalData.elements || []).map(el => `<tr>
-                <td>${escapeHtml(el.name)}</td>
-                <td>${escapeHtml(el.advanced)}</td>
-                <td>${escapeHtml(el.basic)}</td>
-                <td>${escapeHtml(el.foundation)}</td>
-                <td>${escapeHtml(el.tool)}</td>
+                <td class="editable-cell" contenteditable="true">${escapeHtml(el.name)}</td>
+                <td class="editable-cell" contenteditable="true">${escapeHtml(el.advanced)}</td>
+                <td class="editable-cell" contenteditable="true">${escapeHtml(el.basic)}</td>
+                <td class="editable-cell" contenteditable="true">${escapeHtml(el.foundation)}</td>
+                <td class="editable-cell" contenteditable="true">${escapeHtml(el.tool)}</td>
             </tr>`).join('');
 
             const html = `
+                <p class="editable-hint">💡 아래 표의 내용은 클릭해서 자유롭게 수정할 수 있습니다. 수정한 내용은 인쇄/복사에 그대로 반영됩니다.</p>
+
                 <table class="lesson-table">
                     <caption>기본 정보</caption>
-                    <tr><th>학년-학기</th><td>${escapeHtml(p.level)} ${escapeHtml(p.semester)} ${escapeHtml(p.grade)}</td><th>대상</th><td>${escapeHtml(p.level)} ${escapeHtml(p.grade)} (${escapeHtml(p.disabilities) || '-'}, ${escapeHtml(p.severity)})</td></tr>
-                    <tr><th>단원</th><td>${escapeHtml(p.topic)}</td><th>지도교사</th><td>${escapeHtml(p.teacher) || '-'}</td></tr>
-                    <tr><th>차시</th><td>${escapeHtml(p.sessions)}차시</td><th>학생 수</th><td>${escapeHtml(p.students)}명 (지원인력 ${p.support === '유' ? '있음' : '없음'})</td></tr>
-                    <tr><th>핵심 아이디어</th><td colspan="3">${escapeHtml(ov.coreIdea)}</td></tr>
-                    <tr><th>성취기준</th><td colspan="3">${escapeHtml(lessonPlanState.standards).replace(/\n/g, '<br>')}</td></tr>
-                    <tr><th>학습목표</th><td colspan="3">${escapeHtml(lessonPlanState.objectives)}</td></tr>
-                    <tr><th>탐구 질문</th><td colspan="3">${escapeHtml(ov.inquiryQuestion)}</td></tr>
-                    <tr><th>AI·디지털 도구</th><td colspan="3">${escapeHtml(toolNames)}</td></tr>
+                    <tr><th>학년-학기</th><td class="editable-cell" contenteditable="true">${escapeHtml(p.level)} ${escapeHtml(p.semester)} ${escapeHtml(p.grade)}</td><th>대상</th><td class="editable-cell" contenteditable="true">${escapeHtml(p.level)} ${escapeHtml(p.grade)} (${escapeHtml(p.disabilities) || '-'}, ${escapeHtml(p.severity)})</td></tr>
+                    <tr><th>단원</th><td class="editable-cell" contenteditable="true">${escapeHtml(p.topic)}</td><th>지도교사</th><td class="editable-cell" contenteditable="true">${escapeHtml(p.teacher) || '-'}</td></tr>
+                    <tr><th>차시</th><td class="editable-cell" contenteditable="true">${escapeHtml(p.sessions)}차시</td><th>학생 수</th><td class="editable-cell" contenteditable="true">${escapeHtml(p.students)}명 (지원인력 ${p.support === '유' ? '있음' : '없음'})</td></tr>
+                    <tr><th>핵심 아이디어</th><td class="editable-cell" contenteditable="true" colspan="3">${escapeHtml(ov.coreIdea)}</td></tr>
+                    <tr><th>성취기준</th><td class="editable-cell" contenteditable="true" colspan="3">${escapeHtml(lessonPlanState.standards).replace(/\n/g, '<br>')}</td></tr>
+                    <tr><th>학습목표</th><td class="editable-cell" contenteditable="true" colspan="3">${escapeHtml(lessonPlanState.objectives)}</td></tr>
+                    <tr><th>탐구 질문</th><td class="editable-cell" contenteditable="true" colspan="3">${escapeHtml(ov.inquiryQuestion)}</td></tr>
+                    <tr><th>AI·디지털 도구</th><td class="editable-cell" contenteditable="true" colspan="3">${escapeHtml(toolNames)}</td></tr>
                 </table>
 
                 <table class="lesson-table">
                     <caption>단원 재구성 의도 및 학생·과제 분석</caption>
-                    <tr><th>단원 재구성 의도</th><td>${escapeHtml(ov.redesignIntent)}</td></tr>
-                    <tr><th>학생 및 과제 분석</th><td>${escapeHtml(ov.studentTaskAnalysis)}</td></tr>
-                    <tr><th>특이사항</th><td>${escapeHtml(p.notes) || '-'}</td></tr>
+                    <tr><th>단원 재구성 의도</th><td class="editable-cell" contenteditable="true">${escapeHtml(ov.redesignIntent)}</td></tr>
+                    <tr><th>학생 및 과제 분석</th><td class="editable-cell" contenteditable="true">${escapeHtml(ov.studentTaskAnalysis)}</td></tr>
+                    <tr><th>특이사항</th><td class="editable-cell" contenteditable="true">${escapeHtml(p.notes) || '-'}</td></tr>
                 </table>
 
                 <table class="lesson-table">
@@ -19343,7 +19419,7 @@ ${overviewJson}
 
                 <div class="lesson-caution-box">
                     <h4>⚠️ AI·디지털 도구 활용 유의사항</h4>
-                    <ul>${(dt.cautions || []).map(c => `<li>${escapeHtml(c)}</li>`).join('') || '<li>-</li>'}</ul>
+                    <ul class="editable-cell" contenteditable="true">${(dt.cautions || []).map(c => `<li>${escapeHtml(c)}</li>`).join('') || '<li>-</li>'}</ul>
                 </div>
             `;
 
@@ -19482,6 +19558,18 @@ ${target}
             } catch (err) {
                 responseEl.innerHTML = `<span style="color:var(--danger)">에러 발생: ${err.message}</span>`;
             }
+        };
+
+        // API 키 없이: ChatGPT/Gemini에 직접 붙여넣어 받은 답변을 그대로 붙여넣으면 표시한다.
+        window.showManualAIResponse = function(pasteId, responseId) {
+            const text = document.getElementById(pasteId).value.trim();
+            if (!text) {
+                alert('붙여넣을 AI 응답이 없습니다.');
+                return;
+            }
+            const responseEl = document.getElementById(responseId);
+            responseEl.style.display = 'block';
+            typeWriterEffect(responseId, text);
         };
 
         // Initial search to load everything
