@@ -952,6 +952,23 @@
                     <textarea id="mat-topic" rows="3" placeholder="예: 횡단보도 안전하게 건너기"></textarea>
                 </div>
 
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label>용지 크기</label>
+                        <select id="mat-paper-size">
+                            <option value="A4">A4</option>
+                            <option value="A3">A3</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>용지 방향</label>
+                        <select id="mat-paper-orientation">
+                            <option value="세로">세로</option>
+                            <option value="가로">가로</option>
+                        </select>
+                    </div>
+                </div>
+
                 <button class="btn" onclick="generateMaterialPrompt()">✨ 프롬프트 생성</button>
 
                 <div class="result-area" id="mat-result-area">
@@ -1022,6 +1039,23 @@
                 <div class="form-group">
                     <label>학생 정보 (선택)</label>
                     <input type="text" id="eval-student" placeholder="예: 초등 5학년, 지적장애 경도" />
+                </div>
+
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label>용지 크기</label>
+                        <select id="eval-paper-size">
+                            <option value="A4">A4</option>
+                            <option value="A3">A3</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>용지 방향</label>
+                        <select id="eval-paper-orientation">
+                            <option value="세로">세로</option>
+                            <option value="가로">가로</option>
+                        </select>
+                    </div>
                 </div>
 
                 <button class="btn" onclick="generateEvalPrompt()">✨ 프롬프트 생성</button>
@@ -19436,6 +19470,8 @@ ${overviewJson}
             const disability = document.getElementById('mat-disability').value;
             const levelDetail = document.getElementById('mat-level-detail').value;
             const topic = document.getElementById('mat-topic').value;
+            const paperSize = document.getElementById('mat-paper-size').value;
+            const paperOrientation = document.getElementById('mat-paper-orientation').value;
 
             const prompt = `당신은 특수교육 교구/자료 제작 전문가입니다. 다음 조건에 맞춰 학습자료 제작 가이드 및 내용을 구성해주세요.
 
@@ -19445,14 +19481,16 @@ ${overviewJson}
 - 주 장애유형: ${disability}
 - 인지/학습 수준: ${levelDetail}
 - 주제 및 내용: ${topic}
+- 출력 용지: ${paperSize} ${paperOrientation}
 
 [요청 사항]
 1. 자료의 목적 및 활용 방법 설명
 2. 구체적인 자료 내용 구성 (예: 워크시트 문항, 이야기 텍스트 등)
 3. 시각적 디자인 제안 (색상, 그림, 배치 등 주의점)
 4. 자료 제작 시 특수교육대상자를 위한 수정/조절 팁 (Universal Design)
+5. ${paperSize} ${paperOrientation} 용지 한 장에 맞도록 레이아웃(글자 크기, 여백, 항목 배치)을 구체적으로 제안
 
-상세하고 바로 활용할 수 있는 형태로 작성해주세요.`;
+${paperSize} ${paperOrientation} 용지에 바로 인쇄해 사용할 수 있는 형태로, 상세하게 작성해주세요.`;
 
             document.getElementById('mat-result-area').classList.add('active');
             typeWriterEffect('mat-prompt', prompt);
@@ -19463,6 +19501,8 @@ ${overviewJson}
             const domains = Array.from(document.querySelectorAll('input[name="eval-domain"]:checked')).map(cb => cb.value).join(', ');
             const target = document.getElementById('eval-target').value;
             const student = document.getElementById('eval-student').value;
+            const paperSize = document.getElementById('eval-paper-size').value;
+            const paperOrientation = document.getElementById('eval-paper-orientation').value;
 
             const prompt = `당신은 특수교육 평가 전문가입니다. 다음 조건에 맞는 평가도구를 개발해주세요.
 
@@ -19472,14 +19512,16 @@ ${overviewJson}
 - 평가 대상 내용:
 ${target}
 - 학생 정보: ${student}
+- 출력 용지: ${paperSize} ${paperOrientation}
 
 [요청 사항]
 1. 명확한 평가 척도 및 기준 설정 (예: 루브릭 3~5단계 등)
 2. 구체적인 평가 문항 또는 관찰 항목 리스트 작성
 3. 평가 시 유의사항 (장애 특성 고려)
 4. 평가 결과의 활용 방안 제시
+5. ${paperSize} ${paperOrientation} 용지 한 장에 맞도록 표 크기와 항목 배치를 구체적으로 제안
 
-표(Table) 형태로 깔끔하게 구성하여 바로 출력해 사용할 수 있도록 만들어주세요.`;
+표(Table) 형태로 깔끔하게 구성하여 ${paperSize} ${paperOrientation} 용지에 바로 인쇄해 사용할 수 있도록 만들어주세요.`;
 
             document.getElementById('eval-result-area').classList.add('active');
             typeWriterEffect('eval-prompt', prompt);
