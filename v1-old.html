@@ -453,7 +453,7 @@
             margin-top: 2rem;
         }
 
-        #strategy-preview, .hint-preview-box {
+        #strategy-preview {
             margin-top: 1.5rem;
             background: rgba(0, 113, 227, 0.06);
             border: 1px solid var(--card-border);
@@ -461,7 +461,7 @@
             padding: 1.25rem;
         }
 
-        #strategy-preview h4, .hint-preview-box h4 {
+        #strategy-preview h4 {
             font-size: 0.95rem;
             margin-bottom: 0.75rem;
             color: var(--text-primary);
@@ -745,11 +745,6 @@
                         <label>학습목표</label>
                         <textarea id="lesson-objectives" rows="3" placeholder="예: 이야기를 읽고 등장인물의 생각과 중심 내용을 자신의 수준에 맞게 표현할 수 있다."></textarea>
                     </div>
-
-                    <button class="btn btn-outline" type="button" onclick="suggestObjective()">✨ AI로 학습목표 제안받기 (상/중/하 포함)</button>
-                    <div id="objective-suggestion-area"></div>
-                    <div id="objective-levels-preview"></div>
-
                     <div class="wizard-nav-buttons">
                         <button class="btn" onclick="goToWizardStep(2)">다음 ➡️</button>
                     </div>
@@ -18784,7 +18779,6 @@ const ACHIEVEMENTS_DATA = {
             wizardStep: 1,
             standards: '',
             objectives: '',
-            objectiveLevels: null,
             profile: {},
             strategies: '',
             context: '',
@@ -19037,109 +19031,6 @@ const ACHIEVEMENTS_DATA = {
 
         document.querySelectorAll('input[name="strategy"]').forEach(cb => cb.addEventListener('change', renderStrategyPreview));
 
-        // ===== Lesson Wizard: AI 학습목표(상/중/하) 제안 =====
-        function buildObjectivePrompt(standards) {
-            return `당신은 특수교육 전문가입니다. 아래 성취기준을 바탕으로 학습목표를 제안해주세요.
-
-[성취기준]
-${standards}
-
-반드시 아래 JSON 형식으로만, 다른 설명 없이 응답해주세요:
-{
-  "objective": "전체 학습목표 (한 문장)",
-  "levels": {
-    "상": "상 수준 학생을 위한 학습목표",
-    "중": "중 수준 학생을 위한 학습목표",
-    "하": "하 수준 학생을 위한 학습목표"
-  }
-}`;
-        }
-
-        function applyObjectiveSuggestion(data) {
-            if (data.objective) document.getElementById('lesson-objectives').value = data.objective;
-            lessonPlanState.objectiveLevels = data.levels || null;
-            renderObjectiveLevelsPreview();
-        }
-
-        function renderObjectiveLevelsPreview() {
-            const container = document.getElementById('objective-levels-preview');
-            const levels = lessonPlanState.objectiveLevels;
-            if (!levels) {
-                container.innerHTML = '';
-                container.className = '';
-                return;
-            }
-            container.className = 'hint-preview-box';
-            container.innerHTML = `
-                <h4>📐 수준별 학습목표</h4>
-                <div class="strategy-preview-stage"><b>상</b><ul><li>${escapeHtml(levels['상'])}</li></ul></div>
-                <div class="strategy-preview-stage"><b>중</b><ul><li>${escapeHtml(levels['중'])}</li></ul></div>
-                <div class="strategy-preview-stage"><b>하</b><ul><li>${escapeHtml(levels['하'])}</li></ul></div>
-            `;
-        }
-
-        window.suggestObjective = function() {
-            const standards = document.getElementById('lesson-standards').value.trim();
-            if (!standards) {
-                alert('먼저 성취기준을 입력하거나 선택해주세요.');
-                return;
-            }
-            const apiKey = document.getElementById('shared-api-key').value;
-            const provider = document.getElementById('lesson-api-provider').value;
-            const prompt = buildObjectivePrompt(standards);
-
-            if (apiKey) {
-                runObjectiveSuggestionAuto(prompt, provider, apiKey);
-            } else {
-                renderObjectiveSuggestionManual(prompt);
-            }
-        };
-
-        async function runObjectiveSuggestionAuto(prompt, provider, apiKey) {
-            const area = document.getElementById('objective-suggestion-area');
-            area.innerHTML = '<p style="color:var(--text-secondary);font-size:0.88rem;">AI 응답을 기다리는 중...</p>';
-            try {
-                const raw = await callAIRaw(prompt, provider, apiKey);
-                const data = parseAIJson(raw);
-                applyObjectiveSuggestion(data);
-                area.innerHTML = '<p style="color:#34c759;font-size:0.88rem;">✅ 학습목표가 적용되었습니다. 아래에서 직접 수정할 수도 있습니다.</p>';
-            } catch (err) {
-                area.innerHTML = `<p style="color:var(--danger);font-size:0.88rem;">오류: ${escapeHtml(err.message)} <button class="retry-btn" type="button" onclick="suggestObjective()">다시 시도</button></p>`;
-            }
-        }
-
-        function renderObjectiveSuggestionManual(prompt) {
-            const area = document.getElementById('objective-suggestion-area');
-            area.innerHTML = `
-                <div class="manual-ai-fallback">
-                    <p>아래 프롬프트를 복사해 ChatGPT나 Gemini에 붙여넣고, 받은 답변을 다시 붙여넣어주세요.</p>
-                    <div class="prompt-box" id="objective-prompt-box" style="max-height:200px;overflow-y:auto;">${escapeHtml(prompt)}</div>
-                    <div class="action-buttons">
-                        <button class="btn btn-outline btn-small" type="button" onclick="copyText('objective-prompt-box')">📋 프롬프트 복사</button>
-                        <a class="btn btn-outline btn-small" style="text-decoration:none;text-align:center;" href="https://gemini.google.com/app" target="_blank" rel="noopener">Gemini 열기 ↗</a>
-                        <a class="btn btn-outline btn-small" style="text-decoration:none;text-align:center;" href="https://chatgpt.com" target="_blank" rel="noopener">ChatGPT 열기 ↗</a>
-                    </div>
-                    <textarea id="objective-paste" rows="5" placeholder="여기에 AI가 준 답변을 그대로 붙여넣으세요."></textarea>
-                    <button class="btn btn-outline" type="button" onclick="applyObjectiveFromPaste()">학습목표 적용하기</button>
-                </div>
-            `;
-        }
-
-        window.applyObjectiveFromPaste = function() {
-            const raw = document.getElementById('objective-paste').value.trim();
-            if (!raw) {
-                alert('붙여넣을 AI 응답이 없습니다.');
-                return;
-            }
-            try {
-                const data = parseAIJson(raw);
-                applyObjectiveSuggestion(data);
-                document.getElementById('objective-suggestion-area').innerHTML = '<p style="color:#34c759;font-size:0.88rem;">✅ 학습목표가 적용되었습니다. 아래에서 직접 수정할 수도 있습니다.</p>';
-            } catch (err) {
-                alert('붙여넣은 내용에서 JSON을 찾지 못했습니다. AI 응답 전체를 그대로 붙여넣었는지 확인해주세요.\n\n오류: ' + err.message);
-            }
-        };
-
         // ===== Lesson Wizard: navigation =====
         window.goToWizardStep = function(n) {
             lessonPlanState.wizardStep = n;
@@ -19169,12 +19060,8 @@ ${standards}
             lessonPlanState.activities = null;
             lessonPlanState.evaluation = null;
             lessonPlanState.digitalTools = null;
-            lessonPlanState.objectiveLevels = null;
             const output = document.getElementById('lesson-final-output');
             if (output) output.innerHTML = '';
-            const objArea = document.getElementById('objective-suggestion-area');
-            if (objArea) objArea.innerHTML = '';
-            renderObjectiveLevelsPreview();
             renderStrategyPreview();
             goToWizardStep(1);
         };
@@ -19529,11 +19416,6 @@ ${overviewJson}
                 <td class="editable-cell" contenteditable="true">${escapeHtml(el.tool)}</td>
             </tr>`).join('');
 
-            const objLevels = lessonPlanState.objectiveLevels;
-            const objectiveLevelsRow = objLevels
-                ? `<tr><th>수준별 학습목표</th><td class="editable-cell" contenteditable="true" colspan="3"><b>상:</b> ${escapeHtml(objLevels['상'])}<br><b>중:</b> ${escapeHtml(objLevels['중'])}<br><b>하:</b> ${escapeHtml(objLevels['하'])}</td></tr>`
-                : '';
-
             const html = `
                 <p class="editable-hint">💡 아래 표의 내용은 클릭해서 자유롭게 수정할 수 있습니다. 수정한 내용은 인쇄/복사에 그대로 반영됩니다.</p>
 
@@ -19545,7 +19427,6 @@ ${overviewJson}
                     <tr><th>핵심 아이디어</th><td class="editable-cell" contenteditable="true" colspan="3">${escapeHtml(ov.coreIdea)}</td></tr>
                     <tr><th>성취기준</th><td class="editable-cell" contenteditable="true" colspan="3">${escapeHtml(lessonPlanState.standards).replace(/\n/g, '<br>')}</td></tr>
                     <tr><th>학습목표</th><td class="editable-cell" contenteditable="true" colspan="3">${escapeHtml(lessonPlanState.objectives)}</td></tr>
-                    ${objectiveLevelsRow}
                     <tr><th>탐구 질문</th><td class="editable-cell" contenteditable="true" colspan="3">${escapeHtml(ov.inquiryQuestion)}</td></tr>
                     <tr><th>AI·디지털 도구</th><td class="editable-cell" contenteditable="true" colspan="3">${escapeHtml(toolNames)}</td></tr>
                 </table>
